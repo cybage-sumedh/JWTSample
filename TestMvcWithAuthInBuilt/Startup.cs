@@ -1,10 +1,12 @@
 ﻿using Microsoft.Owin;
 using Owin;
 using System.Configuration;
+using System.IdentityModel.Tokens;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.DataHandler.Encoder;
 using Microsoft.Owin.Security.Jwt;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Owin.Security.OAuth;
 
 [assembly: OwinStartupAttribute(typeof(TestMvcWithAuthInBuilt.Startup))]
 namespace TestMvcWithAuthInBuilt
@@ -28,38 +30,18 @@ namespace TestMvcWithAuthInBuilt
             var audience = ConfigurationManager.AppSettings["DefaultClientId"];
             var secret = TextEncodings.Base64Url.Decode(ConfigurationManager.AppSettings["DefaultClientSecret"]);
 
-            // Api controllers with an [Authorize] attribute will be validated with JWT
-            app.UseJwtBearerAuthentication(
-                new JwtBearerAuthenticationOptions
+            var jwtBearerAuthenticationOptions = new JwtBearerAuthenticationOptions
+            {
+                AuthenticationMode = AuthenticationMode.Active,
+                AllowedAudiences = new[] {audience},
+                IssuerSecurityTokenProviders = new IIssuerSecurityTokenProvider[]
                 {
-                    AuthenticationMode = AuthenticationMode.Active,
-                    AllowedAudiences = new[] { audience },
-                    IssuerSecurityTokenProviders = new IIssuerSecurityTokenProvider[]
-                    {
-                        new SymmetricKeyIssuerSecurityTokenProvider(issuer, secret)
-                    }
-                });
+                    new SymmetricKeyIssuerSecurityTokenProvider(issuer, secret)
+                },
+            };
 
-            //app.UseJwtBearerAuthentication(
-            //    new JwtBearerAuthenticationOptions
-            //    {
-            //        AuthenticationMode = AuthenticationMode.Active,
-            //        AllowedAudiences = new[] { audience },
-            //        IssuerSecurityTokenProviders = new IIssuerSecurityTokenProvider[]
-            //        {
-            //            new SymmetricKeyIssuerSecurityTokenProvider(issuer, secret)
-            //        }
-            //        //,
-            //        //Provider = new OAuthBearerAuthenticationProvider
-            //        //{
-            //        //    OnValidateIdentity = context =>
-            //        //    {
-            //        //        context.Ticket.Identity.AddClaim(new System.Security.Claims.Claim("newCustomClaim", "newValue"));
-            //        //        return Task.FromResult<object>(null);
-            //        //    }
-            //        //}
-            //    });
-
+            // Api controllers with an [Authorize] attribute will be validated with JWT
+            app.UseJwtBearerAuthentication(jwtBearerAuthenticationOptions);
         }
     }
 }

@@ -1,15 +1,16 @@
 ﻿using System.Web.Mvc;
-using Microsoft.AspNetCore.Cors;
+using TestMvcWithAuthInBuilt.CustomAttributes;
 
 namespace TestMvcWithAuthInBuilt.Controllers
 {
-    [Authorize]
+    [RakutenAuthorize]
     public class HomeController : Controller
     {
         public ActionResult Index()
         {
             return View();
         }
+
 
         public ActionResult About()
         {
